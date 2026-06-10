@@ -1,6 +1,5 @@
 #include "game_grid.h"
 
-// Implement the standalone function
 int getRandomToN(int n) {
     static std::random_device rd;
     static std::mt19937 gen(rd());
@@ -8,34 +7,76 @@ int getRandomToN(int n) {
     return distr(gen);
 }
 
-// Implement the Constructor
-GameGrid::GameGrid(std::vector<int> chars, int bx, int by, std::unordered_map<int, std::pair<int, int>>& map_ref) 
-    : characters(std::move(chars)), boundsx(bx), boundsy(by), mp(map_ref) {}
-
-// Implement AutoModifier
-int GameGrid::AutoModifier() {
-    int n = characters.size();
-    if (n == 0) return -1; 
+// Implement the constructor here completely
+GameGrid::GameGrid(std::vector<std::pair<int,int>> chars, int bx, int by) 
+    : characters(std::move(chars)) {
     
-    int i = getRandomToN(n - 1);
+    GridMap.resize(bx); 
+    for (int i = 0; i < bx; ++i) {
+        GridMap[i].resize(by, 0);
+    }
     
-    mp[i].first = (mp[i].first + 1) % boundsx;
-    mp[i].second = (mp[i].second + 1) % boundsy;
-    return 1;
+    for (size_t i = 0; i < characters.size(); ++i) {
+        int x = characters[i].first;
+        int y = characters[i].second;
+        if (x >= 0 && x < bx && y >= 0 && y < by) {
+            GridMap[x][y] = static_cast<int>(i + 1);
+        }
+    }
 }
 
-// Implement User_move
+int GameGrid::AutoModifier() {
+    int n{static_cast<int>(characters.size())};
+    int character{getRandomToN(n-1)};
+    int index{getRandomToN(7)};
+    int count=8;
+    int bx=static_cast<int>(GridMap.size());
+    int by=static_cast<int>(GridMap[0].size());
+    while(count--){
+        int new_i=characters[character].first + directions[index][0];
+        int new_j=characters[character].second + directions[index][1];
+        if(new_j>=0 && new_i>=0 && new_j<by && new_i<bx && GridMap[new_i][new_j]==0){
+            GridMap[characters[character].first][characters[character].second]=0;
+            characters[character].first = new_i;
+            characters[character].second = new_j;
+            GridMap[new_i][new_j]=character+1;
+            return 1;
+        }
+    }
+    return -1;
+}
+
 int GameGrid::User_move(int character, int i, int j){
-    if(character >= characters.size()) return -2;
+    if(character < 0 || character >= static_cast<int>(characters.size())) return -2;
     
-    int prev_posnx = mp[i].first;
-    int prev_posny = mp[i].second;
-    
-    if((prev_posnx + i) < 0 || (prev_posny + j) < 0 || (prev_posnx + i) >= boundsx || (prev_posny + j) >= boundsy) {
+    // FIX: Use 'character' as the index, not 'i'
+    int prev_posnx = characters[character].first;
+    int prev_posny = characters[character].second;
+
+    int bx=static_cast<int>(GridMap.size());
+    int by=static_cast<int>(GridMap[0].size());
+
+    if((prev_posnx + i) < 0 || (prev_posny + j) < 0 || (prev_posnx + i) >= bx || (prev_posny + j) >= by ||
+        GridMap[prev_posnx + i][prev_posny + j]!=0) {
         return -1;
     }
     
-    mp[i].first = prev_posnx + i;
-    mp[i].second = prev_posny + j;
+    GridMap[prev_posnx][prev_posny]=0;
+    characters[character].first=prev_posnx+i;
+    characters[character].second=prev_posny+j;
+    
+    GridMap[prev_posnx + i][prev_posny + j]=character+1;
+    
     return 1;
 }
+
+void GameGrid::GridPrint(){
+    std::cout<<"Printing Grid"<<'\n';
+    for(auto it:GridMap){
+        for(auto k:it){
+            std::cout<<k<<" ";
+        }std::cout<<'\n';
+    }
+    std::cout<<"Printing Grid Done"<<'\n';
+}
+

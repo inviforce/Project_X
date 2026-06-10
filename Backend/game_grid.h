@@ -5,19 +5,18 @@
 #include <random>
 #include <unordered_map>
 
-// Declare the standalone function
 int getRandomToN(int n);
 
-// Declare the class and its members
 class GameGrid {
 private:
-    const std::vector<int> characters;
-    const int boundsx;
-    const int boundsy;
-    std::unordered_map<int, std::pair<int, int>>& mp; 
+    std::vector<std::pair<int,int>> characters; // Removed const so methods can modify state
+    std::vector<std::vector<int>> GridMap;
+    std::vector<std::vector<int>> directions={{1,1},{-1,-1},{1,0},{0,1},{0,-1},{-1,0},{-1,1},{1,-1}};
 
 public:
-    GameGrid(std::vector<int> chars, int bx, int by, std::unordered_map<int, std::pair<int, int>>& map_ref);
+    GameGrid(std::vector<std::pair<int,int>> chars, int bx, int by);
+    
     int AutoModifier();
     int User_move(int character, int i, int j);
+    void GridPrint();
 };
